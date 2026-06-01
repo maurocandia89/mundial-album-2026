@@ -6,7 +6,19 @@ import jwt from "jsonwebtoken";
 import { prisma } from "./db.js";
 
 const app = express();
-app.use(cors());
+
+const ORIGENES_PERMITIDOS = [
+  "http://localhost:5173",
+  "https://mundial-album-2026.vercel.app",
+];
+
+app.use(
+  cors({
+    origin: ORIGENES_PERMITIDOS,
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 app.get("/", (_req, res) => {
   res.json({ ok: true, mensaje: "API Mundial Álbum funcionando" });
