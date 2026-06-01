@@ -12,7 +12,6 @@ export default function Album() {
   const [pagina, setPagina] = useState(0);
   const [celebrar, setCelebrar] = useState(false);
 
-  const inicioX = useRef<number | null>(null);
   const inicioY = useRef<number | null>(null);
 
   useEffect(() => {
@@ -72,37 +71,32 @@ export default function Album() {
     [selecciones.length]
   );
 
-  // SOLO swipe horizontal. El vertical queda libre para hacer scroll normal.
+  // Swipe vertical (arriba/abajo) para cambiar de equipo
   const manejarSwipe = useCallback(
-    (dx: number, dy: number) => {
+    (dy: number) => {
       const UMBRAL = 70;
-      // Solo cambia de equipo si el gesto es claramente horizontal
-      if (Math.abs(dx) > Math.abs(dy) * 1.5 && Math.abs(dx) > UMBRAL) {
-        irA(dx < 0 ? 1 : -1);
+      if (Math.abs(dy) > UMBRAL) {
+        irA(dy < 0 ? 1 : -1); // dy negativo = swipe hacia arriba = siguiente, dy positivo = swipe hacia abajo = anterior
       }
     },
     [irA]
   );
 
   const onTouchStart = (e: React.TouchEvent) => {
-    inicioX.current = e.touches[0].clientX;
     inicioY.current = e.touches[0].clientY;
   };
+
   const onTouchEnd = (e: React.TouchEvent) => {
-    if (inicioX.current === null || inicioY.current === null) return;
-    manejarSwipe(
-      e.changedTouches[0].clientX - inicioX.current,
-      e.changedTouches[0].clientY - inicioY.current
-    );
-    inicioX.current = null;
+    if (inicioY.current === null) return;
+    manejarSwipe(e.changedTouches[0].clientY - inicioY.current);
     inicioY.current = null;
   };
 
-  // Flechas izq/der del teclado (en PC). Saqué arriba/abajo para no interferir.
+  // Flechas arriba/abajo del teclado (en PC) para navegar entre equipos
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") irA(1);
-      if (e.key === "ArrowLeft") irA(-1);
+      if (e.key === "ArrowUp") irA(-1);
+      if (e.key === "ArrowDown") irA(1);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -117,7 +111,7 @@ export default function Album() {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">
         <div className="text-center">
-          <img src="/pelota.png" alt="" className="w-16 h-16 mx-auto mb-3 animate-spin rounded-full" />
+          <img src="/pelota2.png" alt="" className="w-16 h-16 mx-auto mb-3 animate-spin rounded-full" />
           Cargando álbum...
         </div>
       </div>
@@ -142,7 +136,7 @@ export default function Album() {
 
       <div className="flex justify-between items-center px-4 py-3 bg-black/30 backdrop-blur text-white">
         <span className="font-bold flex items-center gap-2">
-          <img src="/pelota.png" alt="" className="w-6 h-6 rounded-full" />
+          <img src="/logo.png" alt="" className="w-6 h-6 rounded-full" />
           Mundial 2026
         </span>
         <div className="flex items-center gap-3 text-sm">
@@ -253,7 +247,7 @@ export default function Album() {
             {pagina + 1} / {selecciones.length}
           </span>
           <p className="text-white/50 text-xs">
-            Deslizá ← → para cambiar de equipo
+            Deslizá ↑ ↓ para cambiar de equipo
           </p>
         </div>
       </div>
