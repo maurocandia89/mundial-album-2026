@@ -1,10 +1,12 @@
 import { useEffect, useState, useMemo, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../store/auth";
 import { useAlbum } from "../store/album";
 import { urlEscudo } from "../lib/escudos";
 import Musica from "../components/Musica";
 
 export default function Album() {
+  const navigate = useNavigate();
   const { usuario, logout } = useAuth();
   const { selecciones, tenidas, cargando, cargar, toggle } = useAlbum();
   const [pagina, setPagina] = useState(0);
@@ -16,6 +18,17 @@ export default function Album() {
   useEffect(() => {
     cargar();
   }, [cargar]);
+
+  // Bloquear el botón "atrás": al entrar al álbum, empujamos un estado
+  // y si el usuario intenta volver, lo mantenemos en el álbum.
+  useEffect(() => {
+    window.history.pushState(null, "", window.location.href);
+    const onPop = () => {
+      window.history.pushState(null, "", window.location.href);
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
 
   const sel = selecciones[pagina];
 
@@ -59,13 +72,13 @@ export default function Album() {
     [selecciones.length]
   );
 
+  // SOLO swipe horizontal. El vertical queda libre para hacer scroll normal.
   const manejarSwipe = useCallback(
     (dx: number, dy: number) => {
-      const UMBRAL = 60;
-      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > UMBRAL) {
+      const UMBRAL = 70;
+      // Solo cambia de equipo si el gesto es claramente horizontal
+      if (Math.abs(dx) > Math.abs(dy) * 1.5 && Math.abs(dx) > UMBRAL) {
         irA(dx < 0 ? 1 : -1);
-      } else if (Math.abs(dy) > UMBRAL) {
-        irA(dy < 0 ? 1 : -1);
       }
     },
     [irA]
@@ -84,31 +97,27 @@ export default function Album() {
     inicioX.current = null;
     inicioY.current = null;
   };
-  const onMouseDown = (e: React.MouseEvent) => {
-    inicioX.current = e.clientX;
-    inicioY.current = e.clientY;
-  };
-  const onMouseUp = (e: React.MouseEvent) => {
-    if (inicioX.current === null || inicioY.current === null) return;
-    manejarSwipe(e.clientX - inicioX.current, e.clientY - inicioY.current);
-    inicioX.current = null;
-    inicioY.current = null;
-  };
 
+  // Flechas izq/der del teclado (en PC). Saqué arriba/abajo para no interferir.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight" || e.key === "ArrowDown") irA(1);
-      if (e.key === "ArrowLeft" || e.key === "ArrowUp") irA(-1);
+      if (e.key === "ArrowRight") irA(1);
+      if (e.key === "ArrowLeft") irA(-1);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [irA]);
 
+  const salir = () => {
+    logout();
+    navigate("/login", { replace: true });
+  };
+
   if (cargando) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">
         <div className="text-center">
-          <div className="text-5xl animate-spin mb-3">⚽</div>
+          <img src="/pelota.png" alt="" className="w-16 h-16 mx-auto mb-3 animate-spin rounded-full" />
           Cargando álbum...
         </div>
       </div>
@@ -122,25 +131,26 @@ export default function Album() {
 
   return (
     <div
-      className="min-h-screen transition-colors duration-500 select-none"
+      className="min-h-screen transition-colors duration-500"
       style={{
         background: `linear-gradient(160deg, ${sel.colorPrimario} 0%, #0f172a 70%)`,
       }}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
-      onMouseDown={onMouseDown}
-      onMouseUp={onMouseUp}
     >
       <Musica />
 
       <div className="flex justify-between items-center px-4 py-3 bg-black/30 backdrop-blur text-white">
-        <span className="font-bold">⚽ Mundial 2026</span>
+        <span className="font-bold flex items-center gap-2">
+          <img src="/pelota.png" alt="" className="w-6 h-6 rounded-full" />
+          Mundial 2026
+        </span>
         <div className="flex items-center gap-3 text-sm">
           <span>{usuario?.nombre}</span>
           <span className="opacity-70">
             Total: {global.tengo}/{global.total}
           </span>
-          <button onClick={logout} className="text-amber-300">Salir</button>
+          <button onClick={salir} className="text-amber-300">Salir</button>
         </div>
       </div>
 
@@ -163,7 +173,6 @@ export default function Album() {
               <h2 className="text-3xl font-black text-white">{sel.nombre}</h2>
             </div>
 
-            {/* Escudo (si existe) o círculo con iniciales */}
             {escudo ? (
               <img
                 src={escudo}
@@ -244,7 +253,7 @@ export default function Album() {
             {pagina + 1} / {selecciones.length}
           </span>
           <p className="text-white/50 text-xs">
-            Deslizá ← → o ↑ ↓ para cambiar de página
+            Deslizá ← → para cambiar de equipo
           </p>
         </div>
       </div>

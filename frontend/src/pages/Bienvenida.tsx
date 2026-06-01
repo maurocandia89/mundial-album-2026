@@ -23,7 +23,8 @@ style={{
       />
 
       {/* Balón */}
-      <div className="text-7xl mb-2 animate-bounce">⚽</div>
+      {/* <div className="text-7xl mb-2 animate-bounce">⚽</div> */}
+      <img src="/pelota2.png" alt="Pelota Mundial 2026" className="w-24 h-24 mb-2 animate-bounce" />
 
       <p className="tracking-[0.4em] text-amber-400 font-semibold text-sm mb-2">
         FIFA WORLD CUP

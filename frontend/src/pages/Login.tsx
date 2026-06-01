@@ -21,22 +21,26 @@ export default function Login() {
       } else {
         await register(email, nombre, password);
       }
-      navigate("/album");
-   } catch (e) {
-  const err = e as { response?: { data?: { error?: string } } };
-  setError(err.response?.data?.error || "Error al conectar");
-} finally {
+      // replace: no deja el login en el historial -> "atrás" no vuelve acá
+      navigate("/album", { replace: true });
+    } catch (e) {
+      const err = e as { response?: { data?: { error?: string } } };
+      setError(err.response?.data?.error || "Error al conectar");
+    } finally {
       setCargando(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6"
-      style={{ background: "radial-gradient(circle at 50% 20%, #1e3a8a 0%, #0f172a 60%, #020617 100%)" }}
+    <div
+      className="min-h-screen flex items-center justify-center px-6"
+      style={{
+        background: "radial-gradient(circle at 50% 20%, #1e3a8a 0%, #0f172a 60%, #020617 100%)",
+      }}
     >
       <div className="bg-slate-800/80 backdrop-blur rounded-2xl p-8 w-full max-w-md shadow-2xl border border-slate-700">
         <div className="text-center mb-6">
-          <div className="text-4xl mb-2">⚽</div>
+          <img src="/pelota.png" alt="" className="w-12 h-12 mx-auto mb-2 rounded-full" />
           <h1 className="text-2xl font-bold text-white">
             {modo === "login" ? "Iniciar sesión" : "Crear cuenta"}
           </h1>
