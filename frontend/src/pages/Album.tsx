@@ -460,7 +460,7 @@
 //   );
 // }
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../store/auth";
 import { useAlbum } from "../store/album";
@@ -471,8 +471,6 @@ export default function Album() {
   const navigate = useNavigate();
   const { usuario, logout } = useAuth();
   const { selecciones, tenidas, cargando, cargar, toggle } = useAlbum();
-  const [celebrar, setCelebrar] = useState(false);
-  const [equipoCompletado, setEquipoCompletado] = useState<number | null>(null);
 
   useEffect(() => {
     cargar();
@@ -500,21 +498,8 @@ export default function Album() {
   const onToggle = useCallback(
     async (figuritaId: number) => {
       await toggle(figuritaId);
-
-      // Verificar si se completó algún equipo EN ESTA SESIÓN
-      selecciones.forEach((sel) => {
-        const total = sel.figuritas.length;
-        const tengo = sel.figuritas.filter((f) => tenidas.has(f.id)).length;
-
-        // Si el equipo está completo y no lo habíamos celebrado antes
-        if (total > 0 && tengo === total && equipoCompletado !== sel.id) {
-          setCelebrar(true);
-          setEquipoCompletado(sel.id);
-          setTimeout(() => setCelebrar(false), 2500);
-        }
-      });
     },
-    [toggle, selecciones, tenidas, equipoCompletado]
+    [toggle]
   );
 
   const salir = () => {
@@ -550,15 +535,6 @@ export default function Album() {
           <button onClick={salir} className="text-amber-300">Salir</button>
         </div>
       </div>
-
-      {celebrar && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
-          <div className="bg-amber-400 text-slate-900 font-black text-2xl px-8 py-6 rounded-2xl shadow-2xl animate-bounce text-center">
-            🎉 ¡Completaste un equipo! 🎉
-            <div className="text-base font-bold mt-1">¡Página llena!</div>
-          </div>
-        </div>
-      )}
 
       <div className="w-full">
         {selecciones.map((sel, idx) => {
