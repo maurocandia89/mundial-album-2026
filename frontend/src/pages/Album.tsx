@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../store/auth";
 import { useAlbum } from "../store/album";
@@ -11,8 +11,6 @@ export default function Album() {
   const { selecciones, tenidas, cargando, cargar, toggle } = useAlbum();
   const [pagina, setPagina] = useState(0);
   const [celebrar, setCelebrar] = useState(false);
-
-  const inicioY = useRef<number | null>(null);
 
   useEffect(() => {
     cargar();
@@ -71,32 +69,11 @@ export default function Album() {
     [selecciones.length]
   );
 
-  // Swipe vertical (arriba/abajo) para cambiar de equipo
-  const manejarSwipe = useCallback(
-    (dy: number) => {
-      const UMBRAL = 70;
-      if (Math.abs(dy) > UMBRAL) {
-        irA(dy < 0 ? 1 : -1); // dy negativo = swipe hacia arriba = siguiente, dy positivo = swipe hacia abajo = anterior
-      }
-    },
-    [irA]
-  );
-
-  const onTouchStart = (e: React.TouchEvent) => {
-    inicioY.current = e.touches[0].clientY;
-  };
-
-  const onTouchEnd = (e: React.TouchEvent) => {
-    if (inicioY.current === null) return;
-    manejarSwipe(e.changedTouches[0].clientY - inicioY.current);
-    inicioY.current = null;
-  };
-
-  // Flechas arriba/abajo del teclado (en PC) para navegar entre equipos
+  // Flechas izq/der del teclado (en PC) para navegar entre equipos
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowUp") irA(-1);
-      if (e.key === "ArrowDown") irA(1);
+      if (e.key === "ArrowRight") irA(1);
+      if (e.key === "ArrowLeft") irA(-1);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -125,16 +102,14 @@ export default function Album() {
 
   return (
     <div
-      className="min-h-screen transition-colors duration-500"
+      className="min-h-screen transition-colors duration-500 overflow-y-auto"
       style={{
         background: `linear-gradient(160deg, ${sel.colorPrimario} 0%, #0f172a 70%)`,
       }}
-      onTouchStart={onTouchStart}
-      onTouchEnd={onTouchEnd}
     >
       <Musica />
 
-      <div className="flex justify-between items-center px-4 py-3 bg-black/30 backdrop-blur text-white">
+      <div className="flex justify-between items-center px-4 py-3 bg-black/30 backdrop-blur text-white sticky top-0 z-40">
         <span className="font-bold flex items-center gap-2">
           <img src="/logo.png" alt="" className="w-6 h-6 rounded-full" />
           Mundial 2026
@@ -242,12 +217,39 @@ export default function Album() {
           </div>
         </div>
 
-        <div className="flex flex-col items-center mt-5 gap-2">
+        <div className="flex flex-col items-center mt-5 gap-3">
           <span className="text-white/80 text-sm">
             {pagina + 1} / {selecciones.length}
           </span>
+          
+          {/* Botones de navegación */}
+          <div className="flex gap-3">
+            <button
+              onClick={() => irA(-1)}
+              disabled={pagina === 0}
+              className={`px-4 py-2 rounded-lg font-bold transition ${
+                pagina === 0
+                  ? "bg-white/20 text-white/50 cursor-not-allowed"
+                  : "bg-amber-400 text-slate-900 hover:bg-amber-300 active:scale-95"
+              }`}
+            >
+              ← Anterior
+            </button>
+            <button
+              onClick={() => irA(1)}
+              disabled={pagina === selecciones.length - 1}
+              className={`px-4 py-2 rounded-lg font-bold transition ${
+                pagina === selecciones.length - 1
+                  ? "bg-white/20 text-white/50 cursor-not-allowed"
+                  : "bg-amber-400 text-slate-900 hover:bg-amber-300 active:scale-95"
+              }`}
+            >
+              Siguiente →
+            </button>
+          </div>
+
           <p className="text-white/50 text-xs">
-            Deslizá ↑ ↓ para cambiar de equipo
+            Usa los botones o las flechas ← → del teclado
           </p>
         </div>
       </div>
