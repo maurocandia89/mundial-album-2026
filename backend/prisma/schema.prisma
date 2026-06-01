@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+// generator client {
+//   provider = "prisma-client"
+//   output   = "../generated/prisma"
+// }
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+ // url = env("DATABASE_URL")
+}
+
+model Usuario {
+  id        String      @id @default(cuid())
+  email     String      @unique
+  nombre    String
+  password  String
+  coleccion Coleccion[]
+  createdAt DateTime    @default(now())
+}
+
+model Seleccion {
+  id              Int        @id @default(autoincrement())
+  nombre          String
+  grupo           String
+  colorPrimario   String     // hex ej "#75AADB"
+  colorSecundario String
+  escudoUrl       String?
+  orden           Int
+  figuritas       Figurita[]
+}
+
+model Figurita {
+  id          Int         @id @default(autoincrement())
+  numero      Int         // número en el álbum
+  nombre      String
+  tipo        TipoFigurita @default(JUGADOR)
+  imagenUrl   String?
+  seleccion   Seleccion?  @relation(fields: [seleccionId], references: [id])
+  seleccionId Int?
+  coleccion   Coleccion[]
+}
+
+enum TipoFigurita {
+  JUGADOR
+  ESCUDO
+  ESTADIO
+  TROFEO
+  PREMIUM
+  EXTRA
+}
+
+model Coleccion {
+  id         String   @id @default(cuid())
+  usuario    Usuario  @relation(fields: [usuarioId], references: [id])
+  usuarioId  String
+  figurita   Figurita @relation(fields: [figuritaId], references: [id])
+  figuritaId Int
+  tenida     Boolean  @default(false)
+  repetidas  Int      @default(0)
+
+  @@unique([usuarioId, figuritaId])
+}
