@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-const PISTAS = ["/musica/daddy_yankee.mp3"];
+const PISTAS = ["/musica/echo.mp3"];
 
 export default function Musica() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
