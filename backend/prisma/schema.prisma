@@ -34,6 +34,7 @@ model Seleccion {
   colorPrimario   String     // hex ej "#75AADB"
   colorSecundario String
   escudoUrl       String?
+  codigoPais      String?
   orden           Int
   figuritas       Figurita[]
 }
