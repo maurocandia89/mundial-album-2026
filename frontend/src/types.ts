@@ -13,6 +13,7 @@ export type Seleccion = {
   grupo: string;
   colorPrimario: string;
   colorSecundario: string;
+  codigoPais?: string | null;
   escudoUrl: string | null;
   orden: number;
   figuritas: Figurita[];
